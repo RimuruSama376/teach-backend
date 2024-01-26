@@ -1,14 +1,16 @@
-import express, { Request, Response, Application } from 'express'
-import dotenv from 'dotenv'
-import dbConnect from './dbConnect.js'
-import BodyParser from 'body-parser'
-import cors from 'cors'
-import Chapter from './model/chapterModel.js'
-import Topic from './model/topicModel.js'
-import path from 'path'
-import { fileURLToPath } from 'url'
+const express = require('express')
+const dotenv = require('dotenv')
+const dbConnect = require('./dbConnect.js')
+const BodyParser = require('body-parser')
+const cors = require('cors')
+const Chapter = require('./model/chapterModel.js')
+const Topic = require('./model/topicModel.js')
+const path = require('path')
+const { fileURLToPath } = require('url')
 
-import multer from 'multer'
+import { Request, Response, Application } from 'express'
+
+const multer = require('multer')
 
 //For env File
 dotenv.config()
@@ -20,17 +22,14 @@ app.use(cors())
 
 app.use(BodyParser.json())
 app.use(BodyParser.urlencoded({ extended: true }))
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const filesDir = path.join(__dirname, 'files');
-app.use('/files', express.static(filesDir));
+const filesDir = path.join(__dirname, 'files')
+app.use('/files', express.static(filesDir))
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  destination: function (req: Request, file: any, cb: any) {
     cb(null, './files')
   },
-  filename: function (req, file, cb) {
+  filename: function (req: Request, file: any, cb: any) {
     console.log('file: ', file)
     const uniqueSuffix = Date.now()
     cb(null, uniqueSuffix + file.originalname)

@@ -1,4 +1,4 @@
-import mongoose, { mongo } from 'mongoose'
+const mongoose = require('mongoose')
 
 const TopicSchema = new mongoose.Schema({
   name: {
@@ -26,7 +26,7 @@ const ChapterSchema = new mongoose.Schema({
   topics: [TopicSchema]
 })
 
-ChapterSchema.virtual('chapterId').get(function () {
+ChapterSchema.virtual('chapterId').get(function (this: any) {
   return this._id.toHexString()
 })
 
@@ -34,10 +34,10 @@ ChapterSchema.virtual('chapterId').get(function () {
 ChapterSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
-  transform: function (doc, ret) {
+  transform: function (doc:any, ret:any) {
     delete ret._id
     return ret
   }
 })
 
-export default mongoose.model('Chapters', ChapterSchema)
+module.exports =  mongoose.model('Chapters', ChapterSchema)

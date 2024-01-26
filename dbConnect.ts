@@ -1,6 +1,6 @@
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
+const mongoose = require('mongoose')
 
+const dotenv = require('dotenv')
 dotenv.config()
 
 const dbConnect = async () => {
@@ -9,9 +9,9 @@ const dbConnect = async () => {
     .then(() => {
       console.log('Successfully connected to MongoDB')
     })
-    .catch((err) => {
+    .catch((err: any) => {
       console.log('Unable to connect to MongoDb: ', err)
     })
 }
 
-export default dbConnect
+module.exports = dbConnect

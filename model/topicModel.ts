@@ -45,4 +45,4 @@ TopicSchema.set('toJSON', {
   }
 })
 
-export default mongoose.model('Topics', TopicSchema)
+module.exports =  mongoose.model('Topics', TopicSchema)

@@ -5,11 +5,11 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx tsc server.ts",
+    "build": "npx tsc",
     "start": "node dist/server.js",
-    "dev": "nodemon --esm server.ts"
+    "dev": "ts-node server.ts"
   },
-  "type": "module",
+  "type": "commonjs",
   "keywords": [],
   "author": "",
   "license": "ISC",
