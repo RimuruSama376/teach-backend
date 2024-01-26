@@ -1,9 +1,14 @@
-import express, { Express, Request, Response, Application } from 'express'
+import express, { Request, Response, Application } from 'express'
 import dotenv from 'dotenv'
 import dbConnect from './dbConnect.js'
 import BodyParser from 'body-parser'
 import cors from 'cors'
 import Chapter from './model/chapterModel.js'
+import Topic from './model/topicModel.js'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+import multer from 'multer'
 
 //For env File
 dotenv.config()
@@ -11,16 +16,28 @@ dbConnect()
 
 const app: Application = express()
 const port = process.env.PORT || 8000
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE']
-  })
-)
+app.use(cors())
 
 app.use(BodyParser.json())
 app.use(BodyParser.urlencoded({ extended: true }))
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const filesDir = path.join(__dirname, 'files');
+app.use('/files', express.static(filesDir));
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './files')
+  },
+  filename: function (req, file, cb) {
+    console.log('file: ', file)
+    const uniqueSuffix = Date.now()
+    cb(null, uniqueSuffix + file.originalname)
+  }
+})
+
+const upload = multer({ storage: storage })
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server')
@@ -37,11 +54,23 @@ app.get('/get-chapters', async (req: Request, res: Response) => {
   }
 })
 
+app.get('/get-topic', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.query
+    const topic = await Topic.findOne({ _id: id })
+    console.log(topic)
+    res.status(200).send(topic)
+  } catch (err) {
+    console.log('an error has occured: ', err)
+    res.status(500).json({ error: err })
+  }
+})
+
 app.post('/add-chapter', async (req: Request, res: Response) => {
   try {
-    const { chapterName } = req.body
+    const { name } = req.body
     const chapter = new Chapter({
-      name: chapterName
+      name: name
     })
     try {
       const newChapter = await chapter.save()
@@ -60,6 +89,132 @@ app.post('/add-chapter', async (req: Request, res: Response) => {
   } catch (err) {
     console.log('an error has occured: ', err)
     res.status(500).json({ error: err })
+  }
+})
+
+app.post('/add-topic', async (req: Request, res: Response) => {
+  try {
+    const chapterId = req.query.id
+    const { name, description } = req.body
+    const topic = new Topic({
+      name: name,
+      description: description
+    })
+    try {
+      const newTopic = await topic.save()
+      if (newTopic) {
+        const updatedChapter = await Chapter.findByIdAndUpdate(
+          chapterId,
+          { $push: { topics: { name: name, topicId: newTopic._id } } }, // Push the new video link to the videos array
+          { new: true } // Return the updated document
+        )
+        console.log(newTopic)
+        res.status(201).send({ newTopic, updatedChapter })
+      }
+    } catch (err) {
+      console.log('Error creating chapter: ', err)
+      res.status(500).json({
+        signupStatus: false,
+        message: 'Error creating Chapter',
+        err
+      })
+    }
+  } catch (err) {
+    console.log('an error has occured: ', err)
+    res.status(500).json({ error: err })
+  }
+})
+
+app.post('/add-pdf', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    const topicId = req.query.id
+    const name = req.file?.originalname
+    const filename = req.file?.filename
+    const newPdf = {
+      name,
+      filename
+    }
+    try {
+      if (newPdf) {
+        const updatedTopic = await Topic.findByIdAndUpdate(
+          topicId,
+          { $push: { PDFs: newPdf } },
+          { new: true }
+        )
+        console.log(newPdf)
+        res.status(201).send({ newPdf, updatedTopic })
+      }
+    } catch (err) {
+      console.log('Error creating chapter: ', err)
+      res.status(500).json({
+        signupStatus: false,
+        message: 'Error creating Chapter',
+        err
+      })
+    }
+  } catch (err) {
+    console.log('an error has occured: ', err)
+    res.status(500).json({ error: err })
+  }
+})
+
+app.patch('/add-video-content', async (req, res) => {
+  try {
+    const chapterId = req.query.id
+    const { videoLink } = req.body
+
+    if (!chapterId) {
+      return res.status(400).send('Chapter ID is required')
+    }
+    if (!videoLink) {
+      return res.status(400).send('Video link is required')
+    }
+
+    // Find the chapter and update it
+    const updatedChapter = await Chapter.findByIdAndUpdate(
+      chapterId,
+      { $push: { videos: videoLink } }, // Push the new video link to the videos array
+      { new: true } // Return the updated document
+    )
+
+    if (!updatedChapter) {
+      return res.status(404).send('Chapter not found')
+    }
+
+    res.status(200).json(updatedChapter)
+  } catch (err) {
+    console.error('Error adding video content: ', err)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+app.patch('/update-topic-description', async (req, res) => {
+  try {
+    const topicId = req.query.id
+    const { description } = req.body
+
+    if (!topicId) {
+      return res.status(400).send('Chapter ID is required')
+    }
+    if (!description) {
+      return res.status(400).send('Video link is required')
+    }
+
+    // Find the topic and update it
+    const updatedTopic = await Topic.findByIdAndUpdate(
+      topicId,
+      { $set: { description: description } },
+      { new: true } // Return the updated document
+    )
+
+    if (!updatedTopic) {
+      return res.status(404).send('Chapter not found')
+    }
+
+    res.status(200).json(updatedTopic)
+  } catch (err) {
+    console.error('Error adding video content: ', err)
+    res.status(500).json({ error: 'Internal server error' })
   }
 })
 
