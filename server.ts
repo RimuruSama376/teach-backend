@@ -40,6 +40,7 @@ const upload = multer({ storage: storage })
 
 app.use((req, res, next) => {
   console.log(`Current API URL: ${req.originalUrl} `, req.body)
+  next()
 })
 
 app.get('/', (req: Request, res: Response) => {
@@ -48,6 +49,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/get-chapters', async (req: Request, res: Response) => {
   try {
+    console.log('searching')
     const chapters = await Chapter.find({})
     console.log(chapters)
     res.status(200).send(chapters)

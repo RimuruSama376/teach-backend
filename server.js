@@ -33,12 +33,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 app.use((req, res, next) => {
     console.log(`Current API URL: ${req.originalUrl} `, req.body);
+    next();
 });
 app.get('/', (req, res) => {
     res.send('Welcome to Express & TypeScript Server');
 });
 app.get('/get-chapters', async (req, res) => {
     try {
+        console.log('searching');
         const chapters = await Chapter.find({});
         console.log(chapters);
         res.status(200).send(chapters);
