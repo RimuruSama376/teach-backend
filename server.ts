@@ -18,7 +18,14 @@ dbConnect()
 
 const app: Application = express()
 const port = process.env.PORT || 8000
-app.use(cors())
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,UPDATE',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}
 
 app.use(BodyParser.json())
 app.use(BodyParser.urlencoded({ extended: true }))
@@ -167,7 +174,7 @@ app.patch('/add-video-content', async (req, res) => {
   try {
     const chapterId = req.query.id
     const { videoLink } = req.body
-
+    console.log(videoLink)
     if (!chapterId) {
       return res.status(400).send('Chapter ID is required')
     }
