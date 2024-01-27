@@ -23,6 +23,7 @@ const corsOptions = {
     preflightContinue: false,
     optionsSuccessStatus: 204
 };
+app.use(cors(corsOptions));
 app.use(BodyParser.json());
 app.use(BodyParser.urlencoded({ extended: true }));
 const filesDir = path.join(__dirname, 'files');
