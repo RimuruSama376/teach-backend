@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
     res.send('Welcome to Express & TypeScript Server');
 });
-app.get('/get-chapters', async (req, res) => {
+app.get('/chapter/get-chapters', async (req, res) => {
     try {
         console.log('searching');
         const chapters = await Chapter.find({});
@@ -58,7 +58,7 @@ app.get('/get-chapters', async (req, res) => {
         res.status(500).json({ error: err });
     }
 });
-app.get('/get-topic', async (req, res) => {
+app.get('/topic/get-topic', async (req, res) => {
     try {
         const { id } = req.query;
         const topic = await Topic.findOne({ _id: id });
@@ -70,7 +70,7 @@ app.get('/get-topic', async (req, res) => {
         res.status(500).json({ error: err });
     }
 });
-app.post('/add-chapter', async (req, res) => {
+app.post('/chapter/add-chapter', async (req, res) => {
     try {
         const { name } = req.body;
         const chapter = new Chapter({
@@ -97,7 +97,7 @@ app.post('/add-chapter', async (req, res) => {
         res.status(500).json({ error: err });
     }
 });
-app.post('/add-topic', async (req, res) => {
+app.post('/chapter/add-topic', async (req, res) => {
     try {
         const chapterId = req.query.id;
         const { name, description } = req.body;
@@ -129,9 +129,12 @@ app.post('/add-topic', async (req, res) => {
         res.status(500).json({ error: err });
     }
 });
-app.post('/add-pdf', upload.single('file'), async (req, res) => {
+app.post('/topic/add-pdf', upload.single('file'), async (req, res) => {
     try {
         const topicId = req.query.id;
+        if (!topicId) {
+            return res.status(400).send('Topic ID is required');
+        }
         const name = req.file?.originalname;
         const filename = req.file?.filename;
         const newPdf = {
@@ -159,7 +162,7 @@ app.post('/add-pdf', upload.single('file'), async (req, res) => {
         res.status(500).json({ error: err });
     }
 });
-app.patch('/add-video-content', async (req, res) => {
+app.patch('/chapter/add-video-content', async (req, res) => {
     try {
         const chapterId = req.query.id;
         const { videoLink } = req.body;
@@ -184,7 +187,7 @@ app.patch('/add-video-content', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-app.patch('/update-topic-description', async (req, res) => {
+app.patch('/topic/update-topic-description', async (req, res) => {
     try {
         const topicId = req.query.id;
         const { description } = req.body;
