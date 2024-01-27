@@ -38,6 +38,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage })
 
+app.use((req, res, next) => {
+  console.log(`Current API URL: ${req.originalUrl} `, req.body)
+})
+
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server')
 })
